@@ -5,6 +5,19 @@
 pub fn parse_end_tag(state: &mut crate::State, configuration: &crate::Configuration) {
   let start_position = state.scan_position;
   let tag_name_start_position = start_position + 2;
+  
+  match state.get_byte(tag_name_start_position) {
+    None | Some(b' ') | Some(b'\t') | Some(b'\n') | Some(b'>') | Some(b'/') => {
+      state.scan_position += 1;
+      return;
+    }
+    Some(c) if !c.is_ascii_alphabetic() => {
+      state.scan_position += 1;
+      return;
+    }
+    _ => {}
+  }
+  
   let mut tag_name_end_position = tag_name_start_position;
   while let Some(character) = state.get_byte(tag_name_end_position) {
     match character {
@@ -125,7 +138,7 @@ pub fn parse_end_tag(state: &mut crate::State, configuration: &crate::Configurat
 pub fn parse_start_tag(state: &mut crate::State, configuration: &crate::Configuration) {
   let start_position = state.scan_position;
   let tag_name_start_position = start_position + 1;
-
+  
   match state.get_byte(tag_name_start_position) {
     None | Some(b' ') | Some(b'\t') | Some(b'\n') | Some(b'>') | Some(b'/') => {
       state.scan_position += 1;
